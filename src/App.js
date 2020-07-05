@@ -1,26 +1,71 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "./app.css";
 
-function App() {
+const submitInputs = (setterFunction) => {
+  const firstInput = document.getElementById("firstInput").value;
+  const secondInput = document.getElementById("secondInput").value;
+  setterFunction({ firstText: firstInput, secondText: secondInput });
+};
+
+export default () => {
+  const [memes, setMemes] = useState([]);
+  const [currentMeme, setCurrentMeme] = useState();
+  const [memeText, setMemeText] = useState({
+    firstText: "",
+    secondText: "",
+  });
+  useEffect(() => {
+    fetch("https://api.imgflip.com/get_memes")
+      .then((result) => result.json())
+      .then((result) => {
+        setMemes(result.data.memes);
+        setCurrentMeme(result.data.memes[0]);
+      })
+      .catch((error) => console.log(error));
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <input id="firstInput" placeholder="First Text" type="text" />
+      <input id="secondInput" placeholder="Second Text" type="text" />
+      <button onClick={(e) => submitInputs(setMemeText)}>
+        Generate Meme Text
+      </button>
+      <button
+        onClick={() => {
+          const currentIndex = memes.indexOf(currentMeme);
+          if (currentIndex > 0) setCurrentMeme(memes[currentIndex - 1]);
+          else alert("hey man its the first meme go next");
+        }}
+      >
+        Previous
+      </button>
+      <button
+        onClick={() => {
+          const currentIndex = memes.indexOf(currentMeme);
+          if (currentIndex < memes.length - 1)
+            setCurrentMeme(memes[currentIndex + 1]);
+          else alert("hey man its the last meme already take a break");
+        }}
+      >
+        Next
+      </button>
+      <button
+        onClick={() => {
+          setCurrentMeme(memes[Math.floor(Math.random() * memes.length)]);
+        }}
+      >
+        Random meme
+      </button>
+      {/* <button onClick={() => {}}>Previous</button>
+      <button onClick={}>Next</button> */}
+      {currentMeme ? (
+        <div id="memeContainer">
+          <img id="memeImage" src={currentMeme.url} />
+          <span id="firstText">{memeText.firstText}</span>
+          <span id="secondText">{memeText.secondText}</span>
+        </div>
+      ) : null}
     </div>
   );
-}
-
-export default App;
+};
